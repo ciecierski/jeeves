@@ -151,8 +151,10 @@ def get_jenkins_job_info(server, job_name):
 		# No compose could be found; likely a failed job where the 'core_puddle' var was never calculated
 		if compose == []:
 			compose = "Could not find compose"
-		else:
+		elif len(compose) == 1:
 			compose = compose[0]
+		elif len(compose) == 2:
+			compose = compose
 
 	except Exception as e:
 

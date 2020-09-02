@@ -32,3 +32,14 @@
 		</ul>
 	{% endfor %}
 {% endmacro %}
+{% macro compose(row) %}
+        {% if row.compose is string %}
+        {{ row.compose }}
+        {% else %}
+	<p style="text-align: center;"><b>From</b></p>
+        {{ row.compose[0] }}
+	<hr>
+	<p style="text-align: center;"><b>To</b></p>
+        {{ row.compose[1] }}
+        {% endif %}
+{% endmacro %}

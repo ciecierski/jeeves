@@ -2,6 +2,7 @@
 <html lang="en">
 	<head>
 		{% from 'macros.html' import blockers %}
+		{% from 'macros.html' import compose %}
 	</head>
 	<body>
 		<div>
@@ -60,7 +61,7 @@
 						{% if row.lcb_result == "SUCCESS" %}
 							<td style="text-align: center;"><a href="{{row.lcb_url}}">{{row.lcb_num}}</a></td>
 							<td style="text-align: center;">{{row.build_days_ago}}</td>
-							<td style="text-align: center;">{{row.compose}}</td>
+							<td style="text-align: center;">{{ compose(row) }}</td>
 							<td style="text-align: center;" bgcolor="#4646ff"><a href="https://www.youtube.com/watch?v=68ugkg9RePc" style="text-decoration: none; color: #000;">{{row.lcb_result}}</a></td>
 							<td style="text-align: center;"><p>N/A</p></td>
 
@@ -68,7 +69,7 @@
 						{% elif row.lcb_result == "UNSTABLE" %}
 							<td style="text-align: center;"><a href="{{row.lcb_url}}">{{row.lcb_num}}</a></td>
 							<td style="text-align: center;">{{row.build_days_ago}}</td>
-							<td style="text-align: center;">{{row.compose}}</td>
+							<td style="text-align: center;">{{ compose(row) }}</td>
 							<td style="text-align: center;" bgcolor="#fdd500">{{row.lcb_result}}</td>
 							<td>{{ blockers(row) }}</td>
 
@@ -76,7 +77,7 @@
 						{% elif row.lcb_result == "FAILURE" %}
 							<td style="text-align: center;"><a href="{{row.lcb_url}}">{{row.lcb_num}}</a></td>
 							<td style="text-align: center;">{{row.build_days_ago}}</td>
-							<td style="text-align: center;">{{row.compose}}</td>
+							<td style="text-align: center;">{{ compose(row) }}</td>
 							<td style="text-align: center;" bgcolor="#ef2929">{{row.lcb_result}}</td>
 							<td>{{ blockers(row) }}</td>
 
@@ -88,7 +89,7 @@
 								<td style="text-align: center;">{{row.lcb_num}}</td>
 							{% endif %}
 							<td style="text-align: center;">{{row.build_days_ago}}</td>
-							<td style="text-align: center;">{{row.compose}}</td>
+							<td style="text-align: center;">{{ compose(row) }}</td>
 							<td style="text-align: center;" bgcolor="#808080">{{row.lcb_result}}</td>
 							<td style="text-align: center;"><p>N/A</p></td>
 
