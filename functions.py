@@ -324,6 +324,8 @@ def has_blockers(blockers, job_name):
 def percent(part, whole):
 	''' basic percent function
 	'''
+	if whole == 0:
+		return 0
 	return round(100 * float(part) / float(whole), 1)
 
 
