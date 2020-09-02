@@ -12,8 +12,7 @@ from functions import generate_html_file, get_bugs_dict, \
 	get_other_blockers, percent
 
 
-def run_report(config, blockers, server, header, test_email, no_email, template_file):
-
+def run_report(config, blockers, server, header, test_email, no_email, template_file, want_stages):
 	# fetch all relevant jobs
 	jobs = get_jenkins_jobs(server, config['job_search_fields'])
 
@@ -39,6 +38,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 	num_success = 0
 	num_unstable = 0
 	num_failure = 0
+	num_unrelated_failure = 0
 	num_missing = 0
 	num_aborted = 0
 	num_error = 0
@@ -58,10 +58,13 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 			continue
 
 		# get job info from jenkins API - will return False if an unmanageable error occured
-		jenkins_api_info = get_jenkins_job_info(server, job_name)
+		jenkins_api_info = get_jenkins_job_info(server, job_name, want_stages)
 
 		# if jeeves was unable to collect any good jenkins api info, skip job
 		if jenkins_api_info:
+			if want_stages:
+				err_stage_unrelated = False
+				err_stage = jenkins_api_info['stage_failure']
 
 			# take action based on last completed build result
 			if jenkins_api_info['lcb_result'] in ["SUCCESS", "NO_KNOWN_BUILDS", "ABORTED"]:
@@ -81,7 +84,10 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 					num_unstable += 1
 				else:
 					num_failure += 1
-
+					if want_stages:
+						if jenkins_api_info['stage_failure'] in config['unrelated_stages']:
+							num_unrelated_failure += 1
+							err_stage_unrelated = True
 				# get all related bugs to job
 				job_covered = False
 				try:
@@ -131,6 +137,16 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 				'tickets': tickets,
 				'other': other
 			}
+			if want_stages:
+				stage_urls = []
+				if 'stage_log' in config and  err_stage in config['stage_log']:
+					for path in config['stage_log'][err_stage]:
+						stage_urls.append("{}/{}/artifact/{}".format(row['job_url'], row['lcb_num'], path))
+				if not stage_urls:
+					stage_url = None
+				row.update({'unrelated': err_stage_unrelated,
+					    'stage_name': err_stage,
+					    'stage_urls': stage_urls})
 
 			# append row to rows
 			rows.append(row)
@@ -151,6 +167,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 	summary['total_success'] = "Total SUCCESS:  {}/{} = {}%".format(num_success, num_jobs, percent(num_success, num_jobs))
 	summary['total_unstable'] = "Total UNSTABLE: {}/{} = {}%".format(num_unstable, num_jobs, percent(num_unstable, num_jobs))
 	summary['total_failure'] = "Total FAILURE:  {}/{} = {}%".format(num_failure, num_jobs, percent(num_failure, num_jobs))
+	summary['total_unrelated_failure'] = "Total unrelated FAILURE:  {}/{} = {}%".format(num_unrelated_failure, num_failure, percent(num_unrelated_failure, num_failure))
 	summary['total_coverage'] = "Total bz/jira/other coverage:  {}/{} = {}%".format(num_covered, num_failure, percent(num_covered, num_failure + num_unstable))
 
 	# create chart config
@@ -166,6 +183,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 	}
 	encoded_config = quote(json.dumps(chart_config))
 	summary['chart_url'] = f'https://quickchart.io/chart?c={encoded_config}'
+
 
 	# bug metrics
 	all_bugs = [bug_id for bug_id in all_bugs if bug_id != 0]
@@ -214,6 +232,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 	htmlcode = template.render(
 		header=header,
 		rows=rows,
+		want_stages=want_stages,
 		summary=summary
 	)
 

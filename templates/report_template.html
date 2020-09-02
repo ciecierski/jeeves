@@ -32,6 +32,9 @@
 							<li>{{summary.total_bugs}}</li>
 							<li>{{summary.total_tickets}}</li>
                                                         <li>{{summary.total_coverage}}</li>
+                                                        {% if want_stages is sameas true %}
+                                                        <li>{{summary.total_unrelated_failure}}</li>
+                                                        {% endif %}
 						</ul>
 					</td>
 				</tr>
@@ -48,6 +51,9 @@
 						<th style="text-align: center;">Compose</th>
 						<th style="text-align: center;">Result</th>
 						<th style="text-align: center;">Blockers</th>
+                                                {% if want_stages is sameas true %}
+						<th style="text-align: center;">stage</th>
+                                                {% endif %}
 					</tr>
 				</thead>
 				<tbody>
@@ -64,6 +70,10 @@
 							<td style="text-align: center;">{{ compose(row) }}</td>
 							<td style="text-align: center;" bgcolor="#4646ff"><a href="https://www.youtube.com/watch?v=68ugkg9RePc" style="text-decoration: none; color: #000;">{{row.lcb_result}}</a></td>
 							<td style="text-align: center;"><p>N/A</p></td>
+                                                        {% if want_stages is sameas true %}
+							<td style="text-align: center;"><p>N/A</p></td>
+                                                        {% endif %}
+
 
 						<!-- LCB is "UNSTABLE" -->
 						{% elif row.lcb_result == "UNSTABLE" %}
@@ -72,6 +82,12 @@
 							<td style="text-align: center;">{{ compose(row) }}</td>
 							<td style="text-align: center;" bgcolor="#fdd500">{{row.lcb_result}}</td>
 							<td>{{ blockers(row) }}</td>
+                                                        {% if want_stages is sameas true %}
+							<td style="text-align: center;"><p>One of the Tempest test failed</p>
+                                                        <br/>
+                                                        <a href="{{ row.lcb_url }}/artifact/tempest-results/">tempest-results</a>
+                                                        </td>
+                                                        {% endif %}
 
 						<!-- LCB is "FAILURE" -->
 						{% elif row.lcb_result == "FAILURE" %}
@@ -80,6 +96,23 @@
 							<td style="text-align: center;">{{ compose(row) }}</td>
 							<td style="text-align: center;" bgcolor="#ef2929">{{row.lcb_result}}</td>
 							<td>{{ blockers(row) }}</td>
+                                                        {% if want_stages is sameas true %}
+                                                        {% if row.unrelated %}
+                                                        {% set stage_color = "#9370db" %}
+                                                        {% set stage_prefix = "_" %}
+                                                        {% else %}
+                                                        {% set stage_color = "#ffffff" %}
+                                                        {% set stage_prefix = "" %}
+                                                        {% endif %}
+							<td style="text-align: center;" bgcolor="{{ stage_color }}"><p>{{ stage_prefix }}{{ row.stage_name }}</p>
+                                                        {% if row.stage_urls is not none %}
+                                                        {% for url in row.stage_urls %}
+                                                        <br/>
+                                                        <a href="{{ url }}">{{ url.split("/")[-1] }}</a>
+                                                        {% endfor %}
+                                                        {% endif %}
+                                                        </td>
+                                                        {% endif %}
 
 						<!-- LCB is set to any other state ('NO_KNOWN_BUILDS', 'ERROR') -->
 						{% else %}
@@ -92,6 +125,9 @@
 							<td style="text-align: center;">{{ compose(row) }}</td>
 							<td style="text-align: center;" bgcolor="#808080">{{row.lcb_result}}</td>
 							<td style="text-align: center;"><p>N/A</p></td>
+                                                        {% if want_stages is sameas true %}
+							<td style="text-align: center;"><p>N/A</p></td>
+                                                        {% endif %}
 
 						{% endif %}
 					</tr>

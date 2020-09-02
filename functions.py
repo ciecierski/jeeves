@@ -106,7 +106,14 @@ def get_bugs_set(blockers):
 	return bug_set
 
 
-def get_jenkins_job_info(server, job_name):
+def _get_stage_failure(build_stages):
+	for stage in build_stages['stages']:
+		if stage['status'] == 'FAILED':
+			return stage['name']
+	return None
+
+
+def get_jenkins_job_info(server, job_name, want_stages):
 	''' takes in jenkins server object and job name
 		returns dict of API info for given job if success
 		returns False if failure
@@ -120,6 +127,11 @@ def get_jenkins_job_info(server, job_name):
 		job_url = job_info['url']
 		lcb_num = job_info['lastCompletedBuild']['number']
 		build_info = server.get_build_info(job_name, lcb_num)
+		if want_stages:
+			stage_failure = 'N/A'
+			if build_info['result'] == 'FAILURE':
+				build_stages = server.get_build_stages(job_name, lcb_num)
+				stage_failure = _get_stage_failure(build_stages)
 		build_time = build_info.get('timestamp')
 		build_days_ago = (datetime.datetime.now() - datetime.datetime.fromtimestamp(build_time / 1000)).days
 		build_actions = build_info['actions']
@@ -165,6 +177,8 @@ def get_jenkins_job_info(server, job_name):
 			compose = "N/A"
 			build_days_ago = "N/A"
 			lcb_result = "NO_KNOWN_BUILDS"
+			if want_stages:
+				stage_failure = "N/A"
 
 		# Unknown error, skip job
 		else:
@@ -179,6 +193,8 @@ def get_jenkins_job_info(server, job_name):
 		'lcb_result': lcb_result,
 		'build_days_ago': build_days_ago
 	}
+	if want_stages:
+		jenkins_api_info.update({'stage_failure': stage_failure})
 	return jenkins_api_info
 
 
