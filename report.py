@@ -46,6 +46,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 	rows = []
 	all_bugs = []
 	all_tickets = []
+	stats_per_version = {}
 	for job in jobs:
 
 		# get name and osp version from job object
@@ -57,11 +58,24 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 			print('No OSP version could be found in job {}. Skipping...'.format(job_name))
 			continue
 
+		if not osp_version in stats_per_version:
+			stats_per_version[osp_version] = {
+				'num_jobs': 0,
+				'num_success': 0,
+                                'num_failure': 0,
+				'num_missing': 0,
+				'num_aborted': 0,
+				'num_unstable': 0,
+				'num_covered': 0,
+				'num_unrelated_failure': 0
+			}
+
 		# get job info from jenkins API - will return False if an unmanageable error occured
 		jenkins_api_info = get_jenkins_job_info(server, job_name, want_stages)
 
 		# if jeeves was unable to collect any good jenkins api info, skip job
 		if jenkins_api_info:
+			stats_per_version[osp_version]['num_jobs'] += 1
 			if want_stages:
 				err_stage_unrelated = False
 				err_stage = jenkins_api_info['stage_failure']
@@ -70,10 +84,13 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 			if jenkins_api_info['lcb_result'] in ["SUCCESS", "NO_KNOWN_BUILDS", "ABORTED"]:
 				if jenkins_api_info['lcb_result'] == "SUCCESS":
 					num_success += 1
+					stats_per_version[osp_version]['num_success'] += 1
 				elif jenkins_api_info['lcb_result'] == "NO_KNOWN_BUILDS":
 					num_missing += 1
+					stats_per_version[osp_version]['num_missing'] += 1
 				else:
 					num_aborted += 1
+					stats_per_version[osp_version]['num_aborted'] += 1
 
 				bugs = [{'bug_name': 'N/A', 'bug_url': None}]
 				tickets = [{'ticket_name': 'N/A', 'ticket_url': None}]
@@ -82,12 +99,15 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 			elif jenkins_api_info['lcb_result'] in ["UNSTABLE", "FAILURE"]:
 				if jenkins_api_info['lcb_result'] == "UNSTABLE":
 					num_unstable += 1
+					stats_per_version[osp_version]['num_unstable'] += 1
 				else:
 					num_failure += 1
+					stats_per_version[osp_version]['num_failure'] += 1
 					if want_stages:
 						if jenkins_api_info['stage_failure'] in config['unrelated_stages']:
-							num_unrelated_failure += 1
+							stats_per_version[osp_version]['num_unrelated_failure'] += 1
 							err_stage_unrelated = True
+							num_unrelated_failure += 1
 				# get all related bugs to job
 				job_covered = False
 				try:
@@ -114,11 +134,13 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 				except:
 					other = [{'other_name': 'N/A', 'other_url': None}]
 				if job_covered:
+					stats_per_version[osp_version]['num_covered'] += 1
 					num_covered += 1
 			else:
 				print("job {} had lcb_result {}: reporting as error job".format(job_name, jenkins_api_info['lcb_result']))
 				jenkins_api_info['lcb_result'] = "ERROR"
 				num_error += 1
+				stats_per_version[osp_version]['num_error'] += 1
 				bugs = [{'bug_name': 'N/A', 'bug_url': None}]
 				tickets = [{'ticket_name': 'N/A', 'ticket_url': None}]
 				other = [{'other_name': 'N/A', 'other_url': None}]
@@ -233,6 +255,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 		header=header,
 		rows=rows,
 		want_stages=want_stages,
+		stats_per_version=stats_per_version,
 		summary=summary
 	)
 
