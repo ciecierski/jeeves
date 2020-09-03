@@ -42,6 +42,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 	num_missing = 0
 	num_aborted = 0
 	num_error = 0
+	num_covered = 0
 	rows = []
 	all_bugs = []
 	all_tickets = []
@@ -82,10 +83,12 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 					num_failure += 1
 
 				# get all related bugs to job
+				job_covered = False
 				try:
 					bug_ids = blockers[job_name]['bz']
 					all_bugs.extend(bug_ids)
 					bugs = list(map(all_bugs_dict.get, bug_ids))
+					job_covered = True
 				except:
 					bugs = [{'bug_name': "Could not find relevant bug", 'bug_url': None}]
 
@@ -94,15 +97,18 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 					ticket_ids = blockers[job_name]['jira']
 					all_tickets.extend(ticket_ids)
 					tickets = list(map(all_jira_dict.get, ticket_ids))
+					job_covered = True
 				except:
 					tickets = [{'ticket_name': "Could not find relevant ticket", 'ticket_url': None}]
 
 				# get any "other" artifact for job
 				try:
 					other = get_other_blockers(blockers, job_name)
+					job_covered = True
 				except:
 					other = [{'other_name': 'N/A', 'other_url': None}]
-
+				if job_covered:
+					num_covered += 1
 			else:
 				print("job {} had lcb_result {}: reporting as error job".format(job_name, jenkins_api_info['lcb_result']))
 				jenkins_api_info['lcb_result'] = "ERROR"
@@ -145,6 +151,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 	summary['total_success'] = "Total SUCCESS:  {}/{} = {}%".format(num_success, num_jobs, percent(num_success, num_jobs))
 	summary['total_unstable'] = "Total UNSTABLE: {}/{} = {}%".format(num_unstable, num_jobs, percent(num_unstable, num_jobs))
 	summary['total_failure'] = "Total FAILURE:  {}/{} = {}%".format(num_failure, num_jobs, percent(num_failure, num_jobs))
+	summary['total_coverage'] = "Total bz/jira/other coverage:  {}/{} = {}%".format(num_covered, num_failure, percent(num_covered, num_failure + num_unstable))
 
 	# create chart config
 	chart_config = {
