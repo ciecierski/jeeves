@@ -12,7 +12,7 @@ from functions import generate_html_file, get_bugs_dict, \
 	get_other_blockers, percent
 
 
-def run_report(config, blockers, server, header, test_email, no_email, template_file, want_stages):
+def run_report(config, blockers, server, header, test_email, no_email, template_file, want_stages, no_header):
 	# fetch all relevant jobs
 	jobs = get_jenkins_jobs(server, config['job_search_fields'])
 
@@ -256,6 +256,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 		rows=rows,
 		want_stages=want_stages,
 		stats_per_version=stats_per_version,
+                no_header=no_header,
 		summary=summary
 	)
 

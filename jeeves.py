@@ -24,6 +24,7 @@ if __name__ == '__main__':
 	parser.add_argument("--remind", default=False, action='store_true', help='Flag to run Jeeves in "reminder" mode. Note this will override --no-email and --save')
 	parser.add_argument("--template", default="report_template.html", type=str, help='The template file under templates directory to use for the HTML report')
 	parser.add_argument("--stages", default=False, action='store_true', help='Flag to enable stages inspection.  Need "relevant_stages" configured to be useful.')
+	parser.add_argument("--no-header", default=False, action='store_true', help='Flag to prevent html header generation.')
 	args = parser.parse_args()
 	config_file = args.config
 	blocker_file = args.blockers
@@ -32,6 +33,7 @@ if __name__ == '__main__':
 	remind_flag = args.remind
 	template_file = args.template
 	want_stages = args.stages
+	no_header = args.no_header
 	# load configuration data - if YAML format is invalid, log and end program execution
 	try:
 		with open(config_file, 'r') as file:
@@ -65,4 +67,4 @@ if __name__ == '__main__':
 		run_remind(config, blockers, server, header)
 	else:
 		header = generate_header(user, config['job_search_fields'])
-		run_report(config, blockers, server, header, test_email, no_email, template_file, want_stages)
+		run_report(config, blockers, server, header, test_email, no_email, template_file, want_stages, no_header)
