@@ -242,7 +242,10 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 		summary['total_error'] = False
 
 	# initialize jinja2 vars
-	loader = jinja2.FileSystemLoader('./templates')
+	loader = jinja2.ChoiceLoader([
+		jinja2.FileSystemLoader('./templates'),
+		jinja2.PackageLoader('jeeves')
+		])
 	env = jinja2.Environment(loader=loader)
 	try:
 		template = env.get_template(template_file)
