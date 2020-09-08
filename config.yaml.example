@@ -13,3 +13,4 @@ smtp_host: smtp.ourcorporate.com
 email_subject: Our CI status report
 email_to: send_report_to@ourcorporate.com
 email_to_test: my_email_to_test@ourcorporate.com
+prefix: my_report_prefix_string

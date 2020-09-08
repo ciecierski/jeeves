@@ -269,7 +269,10 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 
 	# save HTML report to file if not test run
 	if not test_email:
-		filename = generate_html_file(htmlcode)
+		prefix = ''
+		if 'report_prefix' in config:
+			prefix = config['report_prefix']
+		filename = generate_html_file(htmlcode, prefix=prefix)
 		print('HTML file generated as {}'.format(filename))
 
 	# if "no email" flag has been passed, do not execute this block
