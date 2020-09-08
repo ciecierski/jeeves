@@ -75,6 +75,9 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 
 		# if jeeves was unable to collect any good jenkins api info, skip job
 		if jenkins_api_info:
+			builds = None
+			if job_name in blockers and 'builds' in blockers[job_name]:
+				builds = blockers[job_name]['builds']
 			stats_per_version[osp_version]['num_jobs'] += 1
 			if want_stages:
 				err_stage_unrelated = False
@@ -157,7 +160,8 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 				'lcb_result': jenkins_api_info['lcb_result'],
 				'bugs': bugs,
 				'tickets': tickets,
-				'other': other
+				'other': other,
+				'builds': builds
 			}
 			if want_stages:
 				stage_urls = []

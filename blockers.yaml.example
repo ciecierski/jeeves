@@ -4,7 +4,8 @@ job1:
         - 123
     jira:
         - 'RHOSINFRA-123'
-
+    builds:
+        - 2,3
 job2:
     bz:
         - 456
