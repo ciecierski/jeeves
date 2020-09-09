@@ -12,7 +12,7 @@ from functions import generate_html_file, get_bugs_dict, \
 	get_other_blockers, percent
 
 
-def run_report(config, blockers, server, header, test_email, no_email, template_file, want_stages, no_header):
+def run_report(config, blockers, server, header, test_email, no_email, template_file, want_stages, no_header, skip_aborted):
 	# fetch all relevant jobs
 	jobs = get_jenkins_jobs(server, config['job_search_fields'])
 
@@ -71,7 +71,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 			}
 
 		# get job info from jenkins API - will return False if an unmanageable error occured
-		jenkins_api_info = get_jenkins_job_info(server, job_name, want_stages)
+		jenkins_api_info = get_jenkins_job_info(server, job_name, want_stages, skip_aborted)
 
 		# if jeeves was unable to collect any good jenkins api info, skip job
 		if jenkins_api_info:

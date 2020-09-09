@@ -114,7 +114,7 @@ def _get_stage_failure(build_stages):
 	return None
 
 
-def get_jenkins_job_info(server, job_name, want_stages):
+def get_jenkins_job_info(server, job_name, want_stages, skip_aborted):
 	''' takes in jenkins server object and job name
 		returns dict of API info for given job if success
 		returns False if failure
@@ -128,6 +128,14 @@ def get_jenkins_job_info(server, job_name, want_stages):
 		job_url = job_info['url']
 		lcb_num = job_info['lastCompletedBuild']['number']
 		build_info = server.get_build_info(job_name, lcb_num)
+		if skip_aborted:
+			while build_info['result'] == 'ABORTED':
+				if 'previousBuild' in build_info and 'number' in build_info['previousBuild']:
+					lcb_num = build_info['previousBuild']['number']
+					build_info = server.get_build_info(job_name, lcb_num)
+				else:
+					# bail out, there is no previous build available
+					break
 		if want_stages:
 			stage_failure = 'N/A'
 			if build_info['result'] == 'FAILURE':
