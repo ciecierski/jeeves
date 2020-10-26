@@ -43,6 +43,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 	num_aborted = 0
 	num_error = 0
 	num_covered = 0
+	num_covered_tempest = 0
 	rows = []
 	all_bugs = []
 	all_tickets = []
@@ -138,7 +139,10 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 					other = [{'other_name': 'N/A', 'other_url': None}]
 				if job_covered:
 					stats_per_version[osp_version]['num_covered'] += 1
-					num_covered += 1
+					if jenkins_api_info['lcb_result'] == "FAILURE":
+						num_covered += 1
+					else:
+                                                num_covered_tempest += 1
 			else:
 				print("job {} had lcb_result {}: reporting as error job".format(job_name, jenkins_api_info['lcb_result']))
 				jenkins_api_info['lcb_result'] = "ERROR"
@@ -194,7 +198,8 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 	summary['total_unstable'] = "Total UNSTABLE: {}/{} = {}%".format(num_unstable, num_jobs, percent(num_unstable, num_jobs))
 	summary['total_failure'] = "Total FAILURE:  {}/{} = {}%".format(num_failure, num_jobs, percent(num_failure, num_jobs))
 	summary['total_unrelated_failure'] = "Total unrelated FAILURE:  {}/{} = {}%".format(num_unrelated_failure, num_failure, percent(num_unrelated_failure, num_failure))
-	summary['total_coverage'] = "Total bz/jira/other coverage:  {}/{} = {}%".format(num_covered, num_failure, percent(num_covered, num_failure + num_unstable))
+	summary['total_coverage'] = "Total FAILURE coverage :  {}/{} = {}%".format(num_covered, num_failure, percent(num_covered, num_failure))
+	summary['total_tempest_coverage'] = "Total TEMPEST coverage :  {}/{} = {}%".format(num_covered_tempest, num_unstable, percent(num_covered_tempest, num_unstable))
 
 	# create chart config
 	chart_config = {
