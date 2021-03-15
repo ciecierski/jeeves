@@ -322,7 +322,7 @@ def get_osp_version(job_name):
 	versions = re.findall(r'\d+\.*\d*', job_name)
 	versions_f = map(float,versions) 
   
-	if version is None:
+	if versions is None:
 		return None
 	return max(versions_f)
 
