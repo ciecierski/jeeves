@@ -316,12 +316,15 @@ def get_jira_set(blockers):
 
 def get_osp_version(job_name):
 	''' gets osp version from job name via regex
+		if multiple versions detected, the highest osp version is returned 
 		returns None if no version is found
 	'''
-	version = re.search(r'\d+\.*\d*', job_name)
+	versions = re.findall(r'\d+\.*\d*', job_name)
+	versions_f = map(float,versions) 
+  
 	if version is None:
 		return None
-	return version.group()
+	return max(versions_f)
 
 
 def get_other_blockers(blockers, job_name):
