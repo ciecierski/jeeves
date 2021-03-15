@@ -55,8 +55,7 @@ if __name__ == '__main__':
 
 	# connect to jenkins server - if not possible, log and end program execution
 	try:
-		server = jenkins.Jenkins(config['jenkins_url'], username=config['jenkins_username'], password=config['jenkins_api_token'])
-		user = server.get_whoami()
+		server = jenkins.Jenkins(config['jenkins_url'])
 	except Exception as e:
 		print("Error connecting to Jenkins server: ", e)
 		sys.exit(1)
@@ -65,8 +64,8 @@ if __name__ == '__main__':
 	# if remind, header source should be blocker_file
 	# if report, header source should be job_search_fields
 	if remind_flag:
-		header = generate_header(user, blocker_file, remind=True)
+		header = generate_header(blocker_file, remind=True)
 		run_remind(config, blockers, server, header)
 	else:
-		header = generate_header(user, config['job_search_fields'])
+		header = generate_header(config['job_search_fields'])
 		run_report(config, blockers, server, header, test_email, no_email, template_file, want_stages, no_header, skip_aborted)

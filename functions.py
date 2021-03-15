@@ -8,13 +8,13 @@ import html
 from jira import JIRA
 
 
-def generate_header(user, source, remind=False):
+def generate_header(source, remind=False):
 	''' generates header
 		if remind is true, header source should be blocker_file
 		if remind is false, header source should be job_search_fields
 	'''
-	user_properties = user['property']
-	user_email_address = [prop['address'] for prop in user_properties if prop['_class'] == 'hudson.tasks.Mailer$UserProperty'][0]
+	# user_properties = user['property']
+	# user_email_address = [prop['address'] for prop in user_properties if prop['_class'] == 'hudson.tasks.Mailer$UserProperty'][0]
 	date = '{:%m/%d/%Y at %I:%M%p %Z}'.format(datetime.datetime.now())
 
 	# show only filename in remind header, not full path
@@ -22,7 +22,7 @@ def generate_header(user, source, remind=False):
 		source = source.rsplit('/', 1)[-1]
 
 	header = {
-		'user_email_address': user_email_address,
+		# 'user_email_address': user_email_address,
 		'date': date,
 		'source': source
 	}
