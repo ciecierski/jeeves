@@ -63,9 +63,10 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 			stats_per_version[osp_version] = {
 				'num_jobs': 0,
 				'num_success': 0,
-                                'num_failure': 0,
+                'num_failure': 0,
 				'num_missing': 0,
 				'num_aborted': 0,
+				'num_error':  0,
 				'num_unstable': 0,
 				'num_covered': 0,
 				'num_unrelated_failure': 0
