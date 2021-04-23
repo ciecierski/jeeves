@@ -1,3 +1,4 @@
+import html
 import json
 import jinja2
 import sys
@@ -176,7 +177,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 				if not stage_urls:
 					stage_url = None
 				row.update({'unrelated': err_stage_unrelated,
-					    'stage_name': err_stage,
+					    'stage_name': html.escape(err_stage),
 					    'stage_urls': stage_urls})
 
 			# append row to rows
@@ -269,7 +270,7 @@ def run_report(config, blockers, server, header, test_email, no_email, template_
 		rows=rows,
 		want_stages=want_stages,
 		stats_per_version=stats_per_version,
-                no_header=no_header,
+        no_header=no_header,
 		summary=summary
 	)
 
